@@ -96,6 +96,12 @@ public class Connector {
         }
     }
 
+    /**
+     * Follow a user
+     * @param loginId The userid of the user currently logged in
+     * @param username The username of the user they want to follow
+     * @param input The scanner for the input
+     */
     public void q2(int loginId, String username, Scanner input) {
         try {
             String tableName = "UserProfiles";
