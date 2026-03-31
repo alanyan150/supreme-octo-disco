@@ -1,15 +1,13 @@
 import java.sql.*;
+import java.util.InputMismatchException;
+import java.util.Scanner;
 
 public class Connector {
-    String tableName;
     String query;
-    int sqlCode = 0;      // Variable to hold SQLCODE
-    String sqlState = "00000";  // Variable to hold SQLSTATE
     Connection con;
     Statement statement;
 
     public Connector() throws SQLException {
-        this.tableName = "";
         this.query = "";
         try {
             DriverManager.registerDriver(new com.ibm.db2.jcc.DB2Driver());
@@ -34,13 +32,43 @@ public class Connector {
         this.statement = con.createStatement();
     }
 
+    /**
+     * Message to display if there is an SQL exception
+     *
+     * @param e The exception
+     */
+    private void sqlErrorCode(SQLException e) {
+        int sqlCode = e.getErrorCode(); // Get SQLCODE
+        String sqlState = e.getSQLState(); // Get SQLSTATE
+        System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
+        System.out.println(e.getMessage());
+    }
+
+    public int login(String username) {
+        try {
+            String tableName = "Users";
+            String query = "SELECT userid FROM " + tableName + " WHERE username = '" + username + "'";
+            java.sql.ResultSet rs = this.statement.executeQuery(query);
+            rs.next();
+            return rs.getInt("userid");
+        } catch (SQLException e) {
+            sqlErrorCode(e);
+        }
+        return -1;
+    }
+
+    /**
+     * Query 1: Lookup a user in the database
+     *
+     * @param username The username of the user
+     */
     public void q1(String username) {
         try {
-            String query = "SELECT * FROM " + "UserProfiles" + " WHERE username = '" + username + "'";
-            //System.out.println(query);
+            String tableName = "UserProfiles";
+            String query = "SELECT * FROM " + tableName + " WHERE username = '" + username + "'";
             java.sql.ResultSet rs = this.statement.executeQuery(query);
-            boolean hasdata = false;
-            while (rs.next()) {
+            // since username if unique
+            if (rs.next()) {
                 int id = rs.getInt(1);
                 String name = rs.getString(3);
                 String email = rs.getString(4);
@@ -60,15 +88,69 @@ public class Connector {
                                 + "\n\tbirthday: " + birthday
                                 + "\n\tbio: " + bio
                 );
-                if (!hasdata) hasdata = true;
+            } else {
+                System.out.println("\tNo user found!");
+            }
+        } catch (SQLException e) {
+            sqlErrorCode(e);
+        }
+    }
+
+    public void q2(int loginId, String username, Scanner input) {
+        try {
+            String tableName = "UserProfiles";
+            String query = "SELECT * FROM " + tableName + " WHERE username = '" + username + "'";
+            java.sql.ResultSet rs = this.statement.executeQuery(query);
+            boolean hasdata = false;
+            int id = -1;
+            if (rs.next()) {
+                id = rs.getInt(1);
+                String name = rs.getString(3);
+                String email = rs.getString(4);
+                System.out.println(
+                        "\tid:" + id + ", username: " + username + ", name: " + name + ", email: " + email
+                );
+                hasdata = true;
             }
             if (!hasdata) System.out.println("\tNo user found!");
-            //System.out.println("DONE");
+            else {
+                tableName = "Follows";
+                query = "SELECT * FROM " + tableName
+                        + " WHERE follower ='" + loginId + "'" + " AND following ='" + id + "'";
+                try {
+                    rs = this.statement.executeQuery(query);
+                    if (rs.next()) {
+                        System.out.println("Already following " + username);
+                    } else {
+                        query = "INSERT INTO " + tableName + " VALUES (" + loginId + ", " + id + ")";
+                        System.out.println("Confirm user to follow: " + username);
+                        boolean valid = false;
+                        do {
+                            try {
+                                System.out.print("[Y/N]: ");
+                                String decision = input.nextLine();
+                                switch (decision) {
+                                    case "Y", "y":
+                                        this.statement.executeUpdate(query);
+                                        valid = true;
+                                        break;
+                                    case "N", "n":
+                                        valid = true;
+                                        break;
+                                    default:
+                                        System.out.println("Invalid input!");
+                                }
+                            } catch (InputMismatchException e) {
+                                System.out.println("bla");
+                            }
+                        } while (!valid);
+                    }
+                } catch (SQLException e) {
+                    sqlErrorCode(e);
+                }
+            }
         } catch (SQLException e) {
-            int sqlCode = e.getErrorCode(); // Get SQLCODE
-            String sqlState = e.getSQLState(); // Get SQLSTATE
-            System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
-            System.out.println(e.getMessage());
+            sqlErrorCode(e);
         }
     }
 

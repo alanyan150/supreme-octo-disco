@@ -3,10 +3,12 @@ import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
+    static Scanner input = new Scanner(System.in);
+    static int loginId = 0;
+
     public static void main(String[] args) throws SQLException {
         Connector connector = new Connector();
-        //connector.c1("Users");
-        Scanner input = new Scanner(System.in);
+        login(connector);
         boolean done = false;
         boolean isvalid = true;
         do {
@@ -15,7 +17,7 @@ public class Main {
                         Main Menu
                             1. Lookup user
                             2. Follow user
-                            3. Interact with post
+                            3. Post a post
                             4. Cancel event
                             5. boo
                             6. Quit
@@ -30,13 +32,13 @@ public class Main {
                         lookup(connector);
                         break;
                     case 2:
-                        followuser();
+                        followuser(connector, loginId);
                         break;
                     case 3:
-                        interactpost();
+                        interactpost(connector);
                         break;
                     case 4:
-                        System.out.println(4);
+                        System.out.println(loginId);
                         break;
                     case 5:
                         System.out.println(5);
@@ -51,30 +53,55 @@ public class Main {
             } catch (InputMismatchException e) {
                 isvalid = false;
                 input.next();
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                break;
             }
         } while (!done);
 
         connector.close();
     }
 
+    /**
+     * "Login" without password for convenience
+     */
+    public static void login(Connector c) {
+        boolean exists = false;
+        do {
+            try {
+                System.out.print("Login as: ");
+                input = new Scanner(System.in);
+                String username = input.nextLine();
+                int temp = c.login(username);
+                if (temp != -1) {
+                    loginId = temp;
+                    exists = true;
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Username not found!");
+            }
+        } while (!exists);
+    }
+
     public static void lookup(Connector c) {
         System.out.print("Username: ");
         try {
-            Scanner input = new Scanner(System.in);
-            String choice = input.nextLine();
-            c.q1(choice);
+            input = new Scanner(System.in);
+            String username = input.nextLine();
+            c.q1(username);
         } catch (InputMismatchException e) {
             System.out.println("Invalid input!");
         }
     }
 
-    public static void followuser() {
+    public static void followuser(Connector c, int userid) {
         System.out.print("Enter user name: ");
+        try {
+            input = new Scanner(System.in);
+            String username = input.nextLine();
+            c.q2(userid, username, input);
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input!");
+        }
     }
 
-    public static void interactpost() {
+    public static void interactpost(Connector c) {
     }
 }
