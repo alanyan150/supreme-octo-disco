@@ -44,6 +44,12 @@ public class Connector {
         System.out.println(e.getMessage());
     }
 
+    /**
+     * To log in to a user profile without a password
+     *
+     * @param username The username of the profile
+     * @return The userid of the profile
+     */
     public int login(String username) {
         try {
             String tableName = "Users";
@@ -52,7 +58,7 @@ public class Connector {
             rs.next();
             return rs.getInt("userid");
         } catch (SQLException e) {
-            sqlErrorCode(e);
+            System.out.println("User does not exist");
         }
         return -1;
     }
@@ -98,9 +104,10 @@ public class Connector {
 
     /**
      * Follow a user
-     * @param loginId The userid of the user currently logged in
+     *
+     * @param loginId  The userid of the user currently logged in
      * @param username The username of the user they want to follow
-     * @param input The scanner for the input
+     * @param input    The scanner for the input
      */
     public void q2(int loginId, String username, Scanner input) {
         try {
@@ -147,17 +154,53 @@ public class Connector {
                                         System.out.println("Invalid input!");
                                 }
                             } catch (InputMismatchException e) {
-                                System.out.println("bla");
+                                System.out.println("Invalid input!");
                             }
                         } while (!valid);
                     }
                 } catch (SQLException e) {
-                    sqlErrorCode(e);
+                    System.out.println("User does not exist!");
                 }
             }
         } catch (SQLException e) {
             sqlErrorCode(e);
         }
+    }
+
+    public void q3(int loginId, String caption, String privacy, String filename, String location,
+                   String tags, Scanner input) {
+        String tableName1 = "Posts";
+        String tableName2 = "Posted";
+        Timestamp timestamp = new Timestamp(System.currentTimeMillis());
+        System.out.println(timestamp);
+        String query1 = "INSERT INTO " + tableName1
+                + " (caption, privacy, time, fname, location, tags)"
+                + " VALUES ("
+                + "'" + caption + "', " + "'" + privacy + "', " + "'" + timestamp + "', "
+                + "'" + filename + "', " + "'" + location + "', " + "'" + tags + "'"
+                + ")";
+        // atomically retrieves postid from newly posted post
+        String outerQuery1 = "SELECT postid FROM FINAL TABLE" + "(" + query1 + ")";
+        try {
+            java.sql.ResultSet rs = this.statement.executeQuery(outerQuery1);
+            if (rs.next()) {
+                int postid = rs.getInt(1);
+                String query2 = "INSERT INTO " + tableName2 + " VALUES (" + loginId + ", " + postid + ")";
+                try {
+                    this.statement.executeUpdate(query2);
+                } catch (SQLException e) {
+                    sqlErrorCode(e);
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    public void q4() {
+    }
+
+    public void q5() {
     }
 
     public void close() throws SQLException {

@@ -35,13 +35,13 @@ public class Main {
                         followuser(connector, loginId);
                         break;
                     case 3:
-                        interactpost(connector);
+                        postPost(connector);
                         break;
                     case 4:
-                        System.out.println(loginId);
+                        q4();
                         break;
                     case 5:
-                        System.out.println(5);
+                        q5();
                         break;
                     case 6:
                         System.out.println("Bye!");
@@ -63,6 +63,7 @@ public class Main {
      * "Login" without password for convenience
      */
     public static void login(Connector c) {
+        System.out.println("Use test to test out the application");
         boolean exists = false;
         do {
             try {
@@ -102,6 +103,40 @@ public class Main {
         }
     }
 
-    public static void interactpost(Connector c) {
+    public static void postPost(Connector c) {
+        try {
+            input = new Scanner(System.in);
+            boolean valid = false;
+            System.out.print("Enter caption: ");
+            String caption = input.nextLine();
+            String privacy;
+            do {
+                System.out.print("Privacy [PUB/PRV/FRO]: ");
+                privacy = input.nextLine();
+                if (!privacy.equalsIgnoreCase("PUB")
+                        && !privacy.equalsIgnoreCase("PRV")
+                        && !privacy.equalsIgnoreCase("FRO")) {
+                    System.out.println("Invalid input!");
+                } else {
+                    privacy = privacy.toUpperCase();
+                    valid = true;
+                }
+            } while (!valid);
+            System.out.print("Enter filename: ");
+            String filename = input.nextLine();
+            System.out.print("Enter location: ");
+            String location = input.nextLine();
+            System.out.print("Enter tags: ");
+            String tags = input.nextLine();
+            c.q3(loginId, caption, privacy, filename, location, tags, input);
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input!");
+        }
+    }
+
+    public static void q4() {
+    }
+
+    public static void q5() {
     }
 }
