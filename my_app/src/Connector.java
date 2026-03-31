@@ -143,11 +143,13 @@ public class Connector {
                                 System.out.print("[Y/N]: ");
                                 String decision = input.nextLine();
                                 switch (decision) {
-                                    case "Y", "y":
+                                    case "Y":
+                                    case "y":
                                         this.statement.executeUpdate(query);
                                         valid = true;
                                         break;
-                                    case "N", "n":
+                                    case "N":
+                                    case "n":
                                         valid = true;
                                         break;
                                     default:
