@@ -29,7 +29,7 @@ public class Connector {
             System.exit(1);
         }
         this.con = DriverManager.getConnection(url, your_userid, your_password);
-        this.statement = con.createStatement();
+        this.statement = con.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
     }
 
     /**
@@ -167,8 +167,18 @@ public class Connector {
         }
     }
 
+    /**
+     * Post a post
+     *
+     * @param loginId  The userid of the user currently logged in
+     * @param caption  The caption of the post
+     * @param privacy  The privacy of the post
+     * @param filename The filename for the content of the post
+     * @param location The location of the post
+     * @param tags     The post's tags
+     */
     public void q3(int loginId, String caption, String privacy, String filename, String location,
-                   String tags, Scanner input) {
+                   String tags) {
         String tableName1 = "Posts";
         String tableName2 = "Posted";
         Timestamp timestamp = new Timestamp(System.currentTimeMillis());
@@ -197,10 +207,118 @@ public class Connector {
         }
     }
 
-    public void q4() {
+    public void q4(int loginId, Scanner input) {
+        try {
+            String tableName1 = "Groups";
+            String tableName2 = "IsMember";
+            String query1 = "SELECT gname FROM " + tableName1;
+            java.sql.ResultSet rs = this.statement.executeQuery(query1);
+            if (!rs.isBeforeFirst()) System.out.println("No groups found!");
+            else {
+                int i = 1;
+                while (rs.next()) {
+                    System.out.println("\t" + i++ + ". " + rs.getString(1));
+                }
+                System.out.println("\t" + i + ". Cancel");
+
+                boolean valid = false;
+                do {
+                    System.out.print("Choose a group to join: ");
+                    int choice = input.nextInt();
+                    if (choice >= 1 && choice < i) {
+                        for (int j = i; j != choice; j--) {
+                            rs.previous();
+                        }
+
+                        String gname = rs.getString(1);
+
+                        String tquery = "SELECT * FROM " + tableName2 + " WHERE userid = '" + loginId + "'"
+                                + " AND gname = '" + gname + "'";
+                        rs = this.statement.executeQuery(tquery);
+                        if (rs.isBeforeFirst()) System.out.println("Already member " + gname);
+                        else {
+                            String query2 = "INSERT INTO " + tableName2 + " VALUES ("
+                                    + loginId + ", " + "'" + gname + "')";
+                            try {
+                                this.statement.executeUpdate(query2);
+                                System.out.println("Joined " + gname);
+                            } catch (SQLException e) {
+                                sqlErrorCode(e);
+                            }
+                        }
+
+                        valid = true;
+                    } else if (choice == i) {
+                        System.out.println("Cancelled");
+                        valid = true;
+                    } else {
+                        System.out.println("Invalid choice!");
+                    }
+                } while (!valid);
+            }
+        } catch (SQLException e) {
+            sqlErrorCode(e);
+        }
     }
 
-    public void q5() {
+    public void q5(int loginId, Scanner input) {
+        try {
+            String tableName1 = "Users";
+            String tableName2 = "PrivateMessages";
+            String query1 = "SELECT username FROM " + tableName1 + " WHERE userid IN ("
+                    + "SELECT receiver FROM " + tableName2 + " WHERE sender = " + loginId + ")";
+            java.sql.ResultSet rs = this.statement.executeQuery(query1);
+            if (!rs.isBeforeFirst()) System.out.println("No users found!");
+            else {
+                int i = 1;
+                while (rs.next()) {
+                    System.out.println("\t" + i++ + ". " + rs.getString(1));
+                }
+                System.out.println("\t" + i + ". Cancel");
+                boolean valid = false;
+                do {
+                    System.out.print("Choose a conversation: ");
+                    int choice = input.nextInt();
+                    if (choice >= 1 && choice < i) {
+                        for (int j = i; j != choice; j--) {
+                            rs.previous();
+                        }
+
+                        String receiver = rs.getString(1);
+                        String getID = "SELECT userid FROM " + tableName1 + " WHERE username = '" + receiver + "'";
+                        rs = this.statement.executeQuery(getID);
+                        rs.next();
+                        int ruid = rs.getInt(1);
+
+                        String query2 = "SELECT messageid, content FROM " + tableName2 + " WHERE sender = " + loginId
+                                + " AND receiver = " + ruid;
+                        String query3 = "SELECT messageid, content FROM " + tableName2 + " WHERE sender = " + ruid
+                                + " AND receiver = " + loginId;
+                        try {
+                            rs = this.statement.executeQuery(query2);
+                            if (!rs.isBeforeFirst()) System.out.println("No messages found!");
+                            else {
+                                while (rs.next()) {
+                                    System.out.println("\t" + rs.getString(2));
+                                }
+                            }
+                        } catch (SQLException e) {
+                            sqlErrorCode(e);
+                        }
+
+                        valid = true;
+                    } else if (choice == i) {
+                        System.out.println("Cancelled");
+                        valid = true;
+                    } else {
+                        System.out.println("Invalid choice!");
+                    }
+                } while (!valid);
+            }
+        } catch (
+                SQLException e) {
+            sqlErrorCode(e);
+        }
     }
 
     public void close() throws SQLException {

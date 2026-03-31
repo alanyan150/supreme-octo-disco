@@ -14,12 +14,12 @@ public class Main {
         do {
             if (isvalid) {
                 System.out.print("Main Menu\n" +
-                                 "    1. Lookup user\n" +
-                                 "    2. Follow user\n" +
-                                 "    3. Post a post\n" +
-                                 "    4. Cancel event\n" +
-                                 "    5. boo\n" +
-                                 "    6. Quit\n");
+                        "    1. Lookup user\n" +
+                        "    2. Follow user\n" +
+                        "    3. Post a post\n" +
+                        "    4. Join a group\n" +
+                        "    5. Read private messages\n" +
+                        "    6. Quit\n");
             }
             try {
                 System.out.print("Please enter your option: ");
@@ -36,10 +36,10 @@ public class Main {
                         postPost(connector);
                         break;
                     case 4:
-                        q4();
+                        joinGroup(connector);
                         break;
                     case 5:
-                        q5();
+                        readPM(connector);
                         break;
                     case 6:
                         System.out.println("Bye!");
@@ -61,7 +61,7 @@ public class Main {
      * "Login" without password for convenience
      */
     public static void login(Connector c) {
-        System.out.println("Use test to test out the application");
+        System.out.println("Use test for login to test out the application");
         boolean exists = false;
         do {
             try {
@@ -126,15 +126,17 @@ public class Main {
             String location = input.nextLine();
             System.out.print("Enter tags: ");
             String tags = input.nextLine();
-            c.q3(loginId, caption, privacy, filename, location, tags, input);
+            c.q3(loginId, caption, privacy, filename, location, tags);
         } catch (InputMismatchException e) {
             System.out.println("Invalid input!");
         }
     }
 
-    public static void q4() {
+    public static void joinGroup(Connector c) {
+        c.q4(loginId, input);
     }
 
-    public static void q5() {
+    public static void readPM(Connector c) {
+        c.q5(loginId, input);
     }
 }
