@@ -1,24 +1,22 @@
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class Connector {
-    public static void main(String[] args) throws SQLException {
-        String tableName = "Users";
-        int sqlCode = 0;      // Variable to hold SQLCODE
-        String sqlState = "00000";  // Variable to hold SQLSTATE
+    String tableName;
+    String query;
+    int sqlCode = 0;      // Variable to hold SQLCODE
+    String sqlState = "00000";  // Variable to hold SQLSTATE
+    Connection con;
+    Statement statement;
 
-        if (args.length > 0) tableName = args[0];
-
+    public Connector() throws SQLException {
+        this.tableName = "";
+        this.query = "";
         try {
             DriverManager.registerDriver(new com.ibm.db2.jcc.DB2Driver());
         } catch (Exception cnfe) {
             System.out.println("Class not found");
         }
-
         String url = "jdbc:db2://winter2026-comp421.cs.mcgill.ca:50000/comp421";
-
         /*TODO
             ----------------------------REMOVE!!!----------------------------
          */
@@ -32,47 +30,50 @@ public class Connector {
             System.err.println("Error!! do not have a password to connect to the database!");
             System.exit(1);
         }
-        Connection con = DriverManager.getConnection(url, your_userid, your_password);
-        Statement statement = con.createStatement();
-
-        try {
-            String query = "SELECT * FROM " + tableName;
-            Query query1 = new Query(query);
-            java.sql.ResultSet rs = query1.query(statement);
-            while (rs.next()) {
-                int id = rs.getInt(1);
-                String name = rs.getString(2);
-                System.out.println("id: " + id + ", name: " + name);
-            }
-            System.out.println("DONE");
-        } catch (SQLException e) {
-            sqlCode = e.getErrorCode(); // Get SQLCODE
-            sqlState = e.getSQLState(); // Get SQLSTATE
-            System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
-            System.out.println(e);
-        }
-
-        // Finally but importantly close the statement and connection
-        statement.close();
-        con.close();
+        this.con = DriverManager.getConnection(url, your_userid, your_password);
+        this.statement = con.createStatement();
     }
 
-    public static void c1(String tableName, Statement statement) {
+    public void q1(String username) {
         try {
-            String query = "SELECT * FROM " + tableName;
-            System.out.println(query);
-            java.sql.ResultSet rs = statement.executeQuery(query);
+            String query = "SELECT * FROM " + "UserProfiles" + " WHERE username = '" + username + "'";
+            //System.out.println(query);
+            java.sql.ResultSet rs = this.statement.executeQuery(query);
+            boolean hasdata = false;
             while (rs.next()) {
                 int id = rs.getInt(1);
-                String name = rs.getString(2);
-                System.out.println("id: " + id + ", name: " + name);
+                String name = rs.getString(3);
+                String email = rs.getString(4);
+                String status = rs.getString(5);
+                String location = rs.getString(6);
+                String joindate = rs.getString(7);
+                String birthday = rs.getString(8);
+                String bio = rs.getString(9);
+                System.out.println(
+                        "\tid: " + id
+                                + "\n\tusername: " + username
+                                + "\n\tname: " + name
+                                + "\n\temail: " + email
+                                + "\n\tstatus: " + status
+                                + "\n\tlocation: " + location
+                                + "\n\tjoindate: " + joindate
+                                + "\n\tbirthday: " + birthday
+                                + "\n\tbio: " + bio
+                );
+                if (!hasdata) hasdata = true;
             }
-            System.out.println("DONE");
+            if (!hasdata) System.out.println("\tNo user found!");
+            //System.out.println("DONE");
         } catch (SQLException e) {
             int sqlCode = e.getErrorCode(); // Get SQLCODE
             String sqlState = e.getSQLState(); // Get SQLSTATE
             System.out.println("Code: " + sqlCode + "  sqlState: " + sqlState);
-            System.out.println(e);
+            System.out.println(e.getMessage());
         }
+    }
+
+    public void close() throws SQLException {
+        this.statement.close();
+        this.con.close();
     }
 }

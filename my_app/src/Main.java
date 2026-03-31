@@ -1,37 +1,39 @@
+import java.sql.SQLException;
 import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws SQLException {
+        Connector connector = new Connector();
+        //connector.c1("Users");
         Scanner input = new Scanner(System.in);
         boolean done = false;
         boolean isvalid = true;
         do {
             if (isvalid) {
                 System.out.print("""
-                    Main Menu
-                        1. Lookup user
-                        2. bla
-                        3. blabla
-                        4. bye
-                        5. boo
-                        6. Quit
-                    """);
+                        Main Menu
+                            1. Lookup user
+                            2. Follow user
+                            3. Interact with post
+                            4. Cancel event
+                            5. boo
+                            6. Quit
+                        """);
             }
-            int choice;
             try {
                 System.out.print("Please enter your option: ");
-                choice = input.nextInt();
+                int choice = input.nextInt();
                 isvalid = true;
                 switch (choice) {
                     case 1:
-                        choice1();
+                        lookup(connector);
                         break;
                     case 2:
-                        System.out.println(2);
+                        followuser();
                         break;
                     case 3:
-                        System.out.println(3);
+                        interactpost();
                         break;
                     case 4:
                         System.out.println(4);
@@ -45,7 +47,6 @@ public class Main {
                         break;
                     default:
                         System.out.println("Invalid choice!");
-                        break;
                 }
             } catch (InputMismatchException e) {
                 isvalid = false;
@@ -55,9 +56,25 @@ public class Main {
                 break;
             }
         } while (!done);
+
+        connector.close();
     }
 
-    public static void choice1() {
-        System.out.println(1);
+    public static void lookup(Connector c) {
+        System.out.print("Username: ");
+        try {
+            Scanner input = new Scanner(System.in);
+            String choice = input.nextLine();
+            c.q1(choice);
+        } catch (InputMismatchException e) {
+            System.out.println("Invalid input!");
+        }
+    }
+
+    public static void followuser() {
+        System.out.print("Enter user name: ");
+    }
+
+    public static void interactpost() {
     }
 }
