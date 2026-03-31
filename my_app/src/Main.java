@@ -13,15 +13,13 @@ public class Main {
         boolean isvalid = true;
         do {
             if (isvalid) {
-                System.out.print("""
-                        Main Menu
-                            1. Lookup user
-                            2. Follow user
-                            3. Post a post
-                            4. Cancel event
-                            5. boo
-                            6. Quit
-                        """);
+                System.out.print("Main Menu\n" +
+                                 "    1. Lookup user\n" +
+                                 "    2. Follow user\n" +
+                                 "    3. Post a post\n" +
+                                 "    4. Cancel event\n" +
+                                 "    5. boo\n" +
+                                 "    6. Quit\n");
             }
             try {
                 System.out.print("Please enter your option: ");
