@@ -6,137 +6,124 @@ public class Main {
     static Scanner input = new Scanner(System.in);
     static int loginId = 0;
 
-    public static void main(String[] args) throws SQLException {
-        Connector connector = new Connector();
-        login(connector);
-        boolean done = false;
-        boolean isvalid = true;
-        do {
-            if (isvalid) {
-                System.out.print("Main Menu\n" +
-                        "    1. Lookup user\n" +
-                        "    2. Follow user\n" +
-                        "    3. Post a post\n" +
-                        "    4. Join a group\n" +
-                        "    5. Read private messages\n" +
-                        "    6. Quit\n");
-            }
-            try {
-                System.out.print("Please enter your option: ");
-                int choice = input.nextInt();
-                isvalid = true;
-                switch (choice) {
-                    case 1:
-                        lookup(connector);
-                        break;
-                    case 2:
-                        followuser(connector, loginId);
-                        break;
-                    case 3:
-                        postPost(connector);
-                        break;
-                    case 4:
-                        joinGroup(connector);
-                        break;
-                    case 5:
-                        readPM(connector);
-                        break;
-                    case 6:
-                        System.out.println("Bye!");
-                        done = true;
-                        break;
-                    default:
-                        System.out.println("Invalid choice!");
+    public static void main(String[] args) {
+        Connector connector = null;
+        try {
+            connector = new Connector();
+            login(connector);
+            boolean done = false;
+            boolean showMenu = true;
+            do {
+                if (showMenu) {
+                    System.out.print("\n=== Social Media Main Menu ===\n"
+                            + "    1. Look up user\n"
+                            + "    2. Follow a user\n"
+                            + "    3. Create a post\n"
+                            + "    4. Join a group\n"
+                            + "    5. View private messages\n"
+                            + "    6. Send a private message\n"
+                            + "    7. Quit\n");
                 }
-            } catch (InputMismatchException e) {
-                isvalid = false;
-                input.next();
-            }
-        } while (!done);
+                showMenu = true;
+                System.out.print("Please enter your option: ");
+                try {
+                    int choice = Integer.parseInt(input.nextLine().trim());
+                    switch (choice) {
+                        case 1: lookup(connector);       break;
+                        case 2: followUser(connector);   break;
+                        case 3: createPost(connector);   break;
+                        case 4: joinGroup(connector);    break;
+                        case 5: viewMessages(connector); break;
+                        case 6: sendMessage(connector);  break;
+                        case 7:
+                            System.out.println("Goodbye!");
+                            done = true;
+                            break;
+                        default:
+                            System.out.println("Invalid choice. Please enter 1-7.");
+                            showMenu = false;
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Please enter a number.");
+                    showMenu = false;
+                }
+            } while (!done);
 
-        connector.close();
+        } catch (SQLException e) {
+            System.err.println("Database error: " + e.getMessage());
+            e.printStackTrace();
+        } catch (Exception e) {
+            System.err.println("Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (connector != null) {
+                try {
+                    connector.close();
+                    System.out.println("Database connection closed.");
+                } catch (SQLException e) {
+                    System.err.println("Error closing connection: " + e.getMessage());
+                }
+            }
+        }
     }
 
-    /**
-     * "Login" without password for convenience
-     */
     public static void login(Connector c) {
-        System.out.println("Use test for login to test out the application");
+        System.out.println("Hint: try 'byule4' as the username to test the application.");
         boolean exists = false;
         do {
-            try {
-                System.out.print("Login as: ");
-                input = new Scanner(System.in);
-                String username = input.nextLine();
-                int temp = c.login(username);
-                if (temp != -1) {
-                    loginId = temp;
-                    exists = true;
-                }
-            } catch (InputMismatchException e) {
-                System.out.println("Username not found!");
+            System.out.print("Login as (username): ");
+            String username = input.nextLine().trim();
+            int temp = c.login(username);
+            if (temp != -1) {
+                loginId = temp;
+                exists = true;
+                System.out.println("Logged in as '" + username + "' (userid=" + loginId + ").");
             }
         } while (!exists);
     }
 
     public static void lookup(Connector c) {
-        System.out.print("Username: ");
-        try {
-            input = new Scanner(System.in);
-            String username = input.nextLine();
-            c.q1(username);
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid input!");
-        }
+        System.out.print("Enter username to look up: ");
+        c.q1(input.nextLine().trim());
     }
 
-    public static void followuser(Connector c, int userid) {
-        System.out.print("Enter user name: ");
-        try {
-            input = new Scanner(System.in);
-            String username = input.nextLine();
-            c.q2(userid, username, input);
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid input!");
-        }
+    public static void followUser(Connector c) {
+        System.out.print("Enter username to follow: ");
+        c.q2(loginId, input.nextLine().trim(), input);
     }
 
-    public static void postPost(Connector c) {
-        try {
-            input = new Scanner(System.in);
-            boolean valid = false;
-            System.out.print("Enter caption: ");
-            String caption = input.nextLine();
-            String privacy;
-            do {
-                System.out.print("Privacy [PUB/PRV/FRO]: ");
-                privacy = input.nextLine();
-                if (!privacy.equalsIgnoreCase("PUB")
-                        && !privacy.equalsIgnoreCase("PRV")
-                        && !privacy.equalsIgnoreCase("FRO")) {
-                    System.out.println("Invalid input!");
-                } else {
-                    privacy = privacy.toUpperCase();
-                    valid = true;
-                }
-            } while (!valid);
-            System.out.print("Enter filename: ");
-            String filename = input.nextLine();
-            System.out.print("Enter location: ");
-            String location = input.nextLine();
-            System.out.print("Enter tags: ");
-            String tags = input.nextLine();
-            c.q3(loginId, caption, privacy, filename, location, tags);
-        } catch (InputMismatchException e) {
-            System.out.println("Invalid input!");
-        }
+    public static void createPost(Connector c) {
+        System.out.print("Caption: ");
+        String caption = input.nextLine();
+        String privacy;
+        do {
+            System.out.print("Privacy [PUB/PRV/FRO]: ");
+            privacy = input.nextLine().trim().toUpperCase();
+            if (!privacy.equals("PUB") && !privacy.equals("PRV") && !privacy.equals("FRO"))
+                System.out.println("Must be PUB, PRV, or FRO.");
+        } while (!privacy.equals("PUB") && !privacy.equals("PRV") && !privacy.equals("FRO"));
+        System.out.print("Filename: ");
+        String filename = input.nextLine();
+        System.out.print("Location: ");
+        String location = input.nextLine();
+        System.out.print("Tags: ");
+        String tags = input.nextLine();
+        c.q3(loginId, caption, privacy, filename, location, tags);
     }
 
     public static void joinGroup(Connector c) {
         c.q4(loginId, input);
     }
 
-    public static void readPM(Connector c) {
+    public static void viewMessages(Connector c) {
         c.q5(loginId, input);
+    }
+
+    public static void sendMessage(Connector c) {
+        System.out.print("Enter recipient username: ");
+        String receiver = input.nextLine().trim();
+        System.out.print("Enter message: ");
+        String content = input.nextLine();
+        c.q6(loginId, receiver, content, input);
     }
 }
