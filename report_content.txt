@@ -1,0 +1,46 @@
+
+--- Option 5: View private messages ---
+  Inbox for userid=1:
+    [1] From: alice  | 2024-02-01 | "Hey, how are you?" [UNREAD]
+    [2] From: bob    | 2024-02-02 | "Check out my post!" [READ]
+
+  Enter message number to read (0 to skip): 1
+  Output:
+    Message [1] marked as read.
+    Content: "Hey, how are you?"
+
+--- Option 6: Send a private message ---
+  Enter recipient username: alice
+  Enter message: Hey Alice! Long time no see.
+  Output: Message sent to alice (userid=2).
+
+--- Option 7: Quit ---
+  Output:
+    Goodbye!
+    Database connection closed.
+
+Error handling examples:
+  Invalid menu choice:     Invalid choice. Please enter 1-7.  (menu not re-shown)
+  Non-numeric input:       Invalid input. Please enter a number.
+  User not found:          User 'xyz' not found.
+  DB error (e.g. trigger): SQL error -438, SQLSTATE 75001: Users cannot like their own posts.
+
+══════════════════════════════════════════════════════
+4. INDEXING
+══════════════════════════════════════════════════════
+
+File: index.sql
+
+CREATE INDEX IDX_FOLLOWS_FOLLOWING ON Follows(following);
+
+-- Verification:
+SELECT indname, tabname, colnames
+FROM   syscat.indexes
+WHERE  indschema = 'CS421G115'
+AND    tabname   = 'FOLLOWS';
+
+Result:
+  INDNAME                 TABNAME   COLNAMES
+  ----------------------  --------  ----------
+  IDX_FOLLOWS_FOLLOWING   FOLLOWS   +FOLLOWING
+
