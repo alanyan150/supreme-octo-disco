@@ -1,0 +1,38 @@
+
+Demonstration:
+  -- User 5 is the poster of post 6 (verified via Posted table)
+  -- Attempt to have user 5 like their own post:
+  INSERT INTO Likes VALUES (5, 6);
+
+  Result:
+    DB21034E  The command was processed as an SQL statement because it was not a
+    valid Command Line Processor command.  During SQL processing it returned:
+    SQL0438N  Application raised error or warning with diagnostic text:
+    "Users cannot like their own posts.". SQLSTATE=75001
+
+  The trigger successfully rejected the self-like. The Likes table was unchanged.
+
+  -- Control test: a different user liking post 6 succeeds:
+  INSERT INTO Likes VALUES (3, 6);
+  DB20000I  The SQL command completed successfully.
+
+══════════════════════════════════════════════════════
+7. TEAM COLLABORATION
+══════════════════════════════════════════════════════
+
+All work for COMP-421 Project 3 was completed collaboratively by the members of
+group cs421g115. The SQL components (stored_procedure.sql, trigger.sql,
+index.sql, visualization.sql) were developed and tested directly on the DB2
+server at winter2026-comp421.cs.mcgill.ca. The Java application
+(Connector.java, Main.java) was written to satisfy all five required JDBC
+operations and was compiled with --release 11 for server compatibility and
+tested end-to-end via stdin scripting. The visualization was created using
+Python (openpyxl) from the CSV exported by DB2, producing a properly formatted
+Excel workbook with a clustered bar chart. This report was written collectively,
+with each section verified against actual server output before submission.
+
+Files submitted to MyCourses (separately, not zipped):
+  1. project3.pdf         — this report
+  2. Connector.java       — JDBC application connector
+  3. Main.java            — application entry point and menu
+  4. post_engagement.xlsx — data visualization workbook

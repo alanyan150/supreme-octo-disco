@@ -1,11 +1,10 @@
--- ============================================================
--- COMP-421 Project 3 - Creativity Trigger: NO_SELF_LIKE
--- Prevents a user from liking their own post.
--- BEFORE INSERT on Likes, checks Posted table.
--- If the inserting user is the post author, raises SQLSTATE 75001.
--- ============================================================
-
--- Use @ as delimiter with: db2 -td@ -f trigger.sql
+-- NO_SELF_LIKE
+-- run: db2 -td@ -f trigger.sql
+--
+-- what it does:
+--   fires before every INSERT on Likes
+--   checks if the user is liking their own post
+--   if yes -> blocks the insert with SQLSTATE 75001
 
 DROP TRIGGER NO_SELF_LIKE@
 

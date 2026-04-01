@@ -1,15 +1,14 @@
--- ============================================================
--- COMP-421 Project 3 - Stored Procedure: MARK_ACTIVE_USERS
--- Description: Iterates over all users with a cursor. For each
--- user, counts the total likes received on their posts. Sets
--- status to 'ACT' if likes >= p_min_likes, otherwise 'INA'.
--- Returns the number of users whose status was changed.
--- Parameters:
---   IN  p_min_likes : minimum like count to be marked active
---   OUT p_updated   : number of users whose status was updated
--- ============================================================
-
--- Use @ as delimiter with: db2 -td@ -f stored_procedure.sql
+-- MARK_ACTIVE_USERS
+-- run: db2 -td@ -f stored_procedure.sql
+--
+-- what it does:
+--   loops over every user with a cursor
+--   counts how many likes their posts got
+--   marks them ACT if likes >= threshold, INA otherwise
+--   only updates if status actually changed
+--
+-- IN  p_min_likes  - like threshold to be considered active
+-- OUT p_updated    - how many users got updated
 
 DROP PROCEDURE MARK_ACTIVE_USERS@
 
@@ -32,26 +31,26 @@ BEGIN
         SET v_not_found = 1;
 
     SET p_updated = 0;
-
     OPEN c_users;
 
     user_loop: LOOP
         FETCH c_users INTO v_userid, v_cur_status;
-        IF v_not_found = 1 THEN
-            LEAVE user_loop;
-        END IF;
+        IF v_not_found = 1 THEN LEAVE user_loop; END IF;
 
+        -- count total likes on this user's posts
         SELECT COUNT(*) INTO v_like_count
         FROM   Likes l
         JOIN   Posted pd ON l.postid = pd.postid
         WHERE  pd.posterid = v_userid;
 
+        -- decide new status
         IF v_like_count >= p_min_likes THEN
             SET v_new_status = 'ACT';
         ELSE
             SET v_new_status = 'INA';
         END IF;
 
+        -- only write if status changed
         IF v_cur_status IS NULL OR v_cur_status <> v_new_status THEN
             UPDATE Users SET status = v_new_status WHERE userid = v_userid;
             SET p_updated = p_updated + 1;
